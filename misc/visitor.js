@@ -8,7 +8,6 @@ const visitorDefaults = {
   mutationType: nop,
   queryType: nop,
   schema: nop,
-  subscriptionType: nop,
   type: nop
 }
 
@@ -27,10 +26,6 @@ function visitSchema (node, visitor) {
 
   if (s.mutationType) {
     visitor.mutationType(s.mutationType)
-  }
-
-  if (s.subscriptionType) {
-    visitor.subscriptionType(s.subscriptionType)
   }
 
   for (let i = 0; i < s.types.length; ++i) {

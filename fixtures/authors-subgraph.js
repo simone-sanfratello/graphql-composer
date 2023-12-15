@@ -35,10 +35,6 @@ const schema = `
     batchCreateAuthor(authors: [AuthorInput]!): [Author]!
     publishBlogPost(authorId: ID!): Boolean!
   }
-
-  type Subscription {
-    postPublished: BlogPostPublishEvent
-  }
 `
 
 const data = {
@@ -127,13 +123,6 @@ const resolvers = {
       })
 
       return true
-    }
-  },
-  Subscription: {
-    postPublished: {
-      subscribe: (root, args, ctx) => {
-        return ctx.pubsub.subscribe('PUBLISH_BLOG_POST')
-      }
     }
   },
   Author: {

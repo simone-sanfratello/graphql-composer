@@ -34,10 +34,6 @@ const schema = `
   type Mutation {
     createReview(review: ReviewInput!): Review!
   }
-
-  type Subscription {
-    reviewPosted: ReviewWithBook!
-  }
 `
 let reviews
 let books
@@ -147,13 +143,6 @@ const resolvers = {
       })
 
       return review
-    }
-  },
-  Subscription: {
-    reviewPosted: {
-      subscribe: (root, args, ctx) => {
-        return ctx.pubsub.subscribe('REVIEW_POSTED')
-      }
     }
   }
 }
