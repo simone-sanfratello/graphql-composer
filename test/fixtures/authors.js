@@ -134,4 +134,4 @@ const resolvers = {
   }
 }
 
-module.exports = { name: 'authors', schema, reset, resolvers, data }
+module.exports = { schema, reset, resolvers, data }

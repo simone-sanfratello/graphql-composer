@@ -109,4 +109,4 @@ const resolvers = {
   }
 }
 
-module.exports = { name: 'restaurants-subgraph', schema, reset, resolvers, data }
+module.exports = { schema, reset, resolvers, data }

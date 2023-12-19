@@ -147,7 +147,7 @@ main()
   - Arguments
     - `config` (object, optional) - A configuration object with the following schema.
       - `defaultArgsAdapter` (function, optional) - The default `argsAdapter` function for the entities.
-      - `addEntitiesResolvers` (boolean, optional) - automatically add entities types and resolvers  accordingly with configuration, see [composer entities section](#composer-entities).
+      - `addEntitiesResolvers` (boolean, optional) - automatically add entities types and resolvers accordingly with configuration, see [composer entities section](#composer-entities).
       - `logger` TODO
       - `subgraphs` (array, optional) - Array of subgraph configuration objects with the following schema.
         - `name` (string, optional) - A unique name to identify the subgraph; if missing the default one is `#${index}`, where index is the subgraph index in the array.

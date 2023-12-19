@@ -63,4 +63,4 @@ const entities = {
   }
 }
 
-module.exports = { name: 'books', entities, reset, resolvers, schema, data }
+module.exports = { entities, reset, resolvers, schema, data }

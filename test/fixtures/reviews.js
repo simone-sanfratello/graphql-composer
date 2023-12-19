@@ -160,4 +160,4 @@ const entities = {
   }
 }
 
-module.exports = { name: 'reviews', entities, reset, resolvers, schema }
+module.exports = { entities, reset, resolvers, schema }
