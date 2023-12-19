@@ -7,7 +7,7 @@ const dedent = require('dedent')
 const { createGraphqlServices } = require('./helper')
 const { Composer } = require('../lib/composer')
 
-test('should compose a single subgraph without entities', { skip: true }, async t => {
+test('should compose a single subgraph without entities', async t => {
   const expectedSdl = dedent`input WhereConditionIn {
       in: [ID!]!
     }

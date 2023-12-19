@@ -1,60 +1,28 @@
 'use strict'
-const { strictEqual } = require('node:assert')
-const Fastify = require('fastify')
-const { getIntrospectionQuery } = require('graphql')
-const Mercurius = require('mercurius')
-const { compose } = require('../lib')
+
 const assert = require('node:assert')
+const { getIntrospectionQuery } = require('graphql')
+const Fastify = require('fastify')
+const Mercurius = require('mercurius')
 
 const introspectionQuery = getIntrospectionQuery()
 
-async function buildComposer (t, subgraphs, options) {
-  const promises = subgraphs.map(async (subgraph) => {
-    // TODO subgraph.file
-    delete require.cache[require.resolve(subgraph.file)]
-    const {
-      name,
-      resolvers,
-      schema
-    } = require(subgraph.file)
-    const server = Fastify()
-    t.after(async () => { try { await server.close() } catch { } })
-
-    server.register(Mercurius, { schema, resolvers, graphiql: true })
-    server.get('/.well-known/graphql-composition', async function (req, reply) {
-      return reply.graphql(getIntrospectionQuery())
-    })
-
-    return {
-      name,
-      entities: options.entities[subgraph],
-      server: {
-        host: await server.listen(),
-        composeEndpoint: '/.well-known/graphql-composition',
-        graphqlEndpoint: '/graphql'
-      }
-    }
-  })
-
-  const composerOptions = {
-    ...options,
-    subgraphs: await Promise.all(promises)
-  }
-  const composer = await compose(composerOptions)
+async function createComposerService (t, { compose, options }) {
+  const composer = await compose(options)
   const service = Fastify()
   t.after(async () => { try { await service.close() } catch { } })
 
   service.register(Mercurius, {
     schema: composer.toSdl(),
-    resolvers: composer.resolvers,
+    resolvers: composer.getResolvers(),
     graphiql: true
   })
 
   return { composer, service }
 }
 
-async function graphqlRequest (app, query, variables) {
-  const response = await app.inject({
+async function graphqlRequest (service, query, variables) {
+  const response = await service.inject({
     path: '/graphql',
     method: 'POST',
     headers: {
@@ -69,7 +37,7 @@ async function graphqlRequest (app, query, variables) {
     throw errors
   }
 
-  strictEqual(response.statusCode, 200)
+  assert.strictEqual(response.statusCode, 200)
 
   return data
 }
@@ -145,4 +113,4 @@ function assertObject (actual, expected) {
   }
 }
 
-module.exports = { graphqlRequest, buildComposer, createGraphqlServices, assertObject }
+module.exports = { graphqlRequest, createComposerService, createGraphqlServices, assertObject }
