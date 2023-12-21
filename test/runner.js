@@ -11,8 +11,9 @@ const files = glob('test/**/*.test.js')
 
 const stream = run({
   files,
-  timeout: 30_000,
-  concurrency: files.length
+  timeout: process.env.ONLY ? Infinity : 30_000,
+  concurrency: files.length,
+  only: !!process.env.ONLY
 })
 
 stream.on('test:fail', () => {

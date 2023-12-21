@@ -89,6 +89,7 @@ async function createGraphqlServices (t, servicesConfig) {
       service = s.service
       config.reset = s.config.reset
       config.data = s.config.data
+      config.entities = s.config.entities
     } else if (config.mercurius) {
       service = await createGraphqlServiceFromConfig(t, config)
     }

@@ -14,6 +14,7 @@ const schema = `
 
   type Book {
     id: ID!
+    rate: Int
     reviews: [Review]!
   }
 
@@ -65,18 +66,22 @@ function reset () {
   books = {
     1: {
       id: 1,
+      rate: 3,
       reviews: [1]
     },
     2: {
       id: 2,
+      rate: 4,
       reviews: [2]
     },
     3: {
       id: 3,
+      rate: 5,
       reviews: [2, 3, 4]
     },
     4: {
       id: 4,
+      rate: null,
       reviews: []
     }
   }
