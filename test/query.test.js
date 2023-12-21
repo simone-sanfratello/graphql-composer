@@ -30,7 +30,7 @@ test('should run a query to a single subgraph', async t => {
   assert.deepStrictEqual(result, expectedResult)
 })
 
-test('should run a query to a single subgraph, with a nested type', { skip: true }, async (t) => {
+test('should run a query to a single subgraph, with a nested type', async (t) => {
   const query = `
     query {
       list {
@@ -76,7 +76,6 @@ test('should run a query on multiple subgraphs', async t => {
     }
   ])
   const options = {
-    logger: pino({ level: 'debug' }),
     subgraphs: services.map(service => ({
       entities: service.config.entities,
       name: service.name,
