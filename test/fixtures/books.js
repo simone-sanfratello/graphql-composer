@@ -45,7 +45,9 @@ const resolvers = {
       return data.library[id]?.title
     },
     async getBooksByIds (_, { ids }) {
-      return ids.map((id) => { return data.library[id] })
+      return ids
+        .map((id) => { return data.library[id] })
+        .filter(b => !!b)
     }
   }
 }
