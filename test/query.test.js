@@ -3,7 +3,6 @@
 const assert = require('node:assert')
 const path = require('node:path')
 const { test } = require('node:test')
-const pino = require('pino')
 
 const { createComposerService, createGraphqlServices, graphqlRequest } = require('./helper')
 const { compose } = require('../lib')
@@ -88,7 +87,7 @@ test('should run a query with single result on multiple subgraphs', async t => {
   assert.deepStrictEqual(result, expectedResult)
 })
 
-test('should run a query with list result on multiple subgraphs', { only: true }, async t => {
+test('should run a query with list result on multiple subgraphs', async t => {
   const query = '{ getBooksByIds(ids: [1,2,3]) { id, title, rate } }'
   const expectedResult = {
 
@@ -119,7 +118,6 @@ test('should run a query with list result on multiple subgraphs', { only: true }
     }
   ])
   const options = {
-    logger: pino({ level: 'debug' }),
     subgraphs: services.map(service => ({
       entities: service.config.entities,
       name: service.name,
