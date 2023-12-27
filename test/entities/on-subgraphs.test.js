@@ -35,7 +35,7 @@ const authorsSubgraph = () => {
     type Author {
       id: ID
       name: AuthorName
-      todos(id: ID!): [AuthorTodo]
+      todos(priority: Int): [AuthorTodo]
     }
   
     type BlogPostPublishEvent {
@@ -96,12 +96,20 @@ const authorsSubgraph = () => {
       1: {
         id: 1,
         authorId: 1,
+        priority: 10,
         task: 'Write another book'
       },
       2: {
         id: 2,
         authorId: 1,
+        priority: 5,
         task: 'Get really creative'
+      },
+      3: {
+        id: 3,
+        authorId: 2,
+        priority: 8,
+        task: 'Buy an ice-cream'
       }
     }
   }
@@ -161,9 +169,9 @@ const authorsSubgraph = () => {
       }
     },
     Author: {
-      async todos (_, { id }) {
+      async todos (parent, { priority }) {
         return Object.values(data.todos).filter((t) => {
-          return String(t.id) === id
+          return String(t.authorId) === parent.id && String(t.priority) === priority
         })
       }
     }
@@ -267,13 +275,16 @@ const booksSubgraph = () => {
         name: 'getBooksByIds',
         argsAdapter: (partialResults) => ({ ids: partialResults.map(r => r.id) })
       }
+    },
+    Author: {
+      pkey: 'id'
     }
   }
 
   return { schema, resolvers, entities, data, reset }
 }
 
-test('should resolve foreign types referenced in different results', {only:true}, async (t) => {
+test('should resolve foreign types referenced in different results', { only: true }, async (t) => {
   const query = `{
     booksByAuthors(authorIds: [10, 11, 12]) {
       title author { name { firstName, lastName } }
