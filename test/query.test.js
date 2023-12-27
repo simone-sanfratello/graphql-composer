@@ -57,7 +57,7 @@ test('should run a query to a single subgraph, with a nested type', async (t) =>
   assert.deepStrictEqual(result, expectedResult)
 })
 
-test('should run a query with single result on multiple subgraphs', async t => {
+test('should run a query with single result on multiple subgraphs', { only: true }, async t => {
   const query = '{ getBook(id: 1) { id, title, genre, rate } }'
   const expectedResult = { getBook: { id: '1', title: 'A Book About Things That Never Happened', genre: 'FICTION', rate: 3 } }
 

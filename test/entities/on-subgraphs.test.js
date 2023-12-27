@@ -284,7 +284,7 @@ const booksSubgraph = () => {
   return { schema, resolvers, entities, data, reset }
 }
 
-test('should resolve foreign types referenced in different results', { only: true }, async (t) => {
+test('should resolve foreign types referenced in different results', { only: 0 }, async (t) => {
   const query = `{
     booksByAuthors(authorIds: [10, 11, 12]) {
       title author { name { firstName, lastName } }
