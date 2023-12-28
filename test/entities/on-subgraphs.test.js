@@ -270,21 +270,21 @@ const booksSubgraph = () => {
   const entities = {
     Book: {
       pkey: 'id',
-      fkeys: [{ pkey: 'author.id', type: 'Author' }],
+      fkeys: [{
+        pkey: 'author.id',
+        type: 'Author'
+      }],
       resolver: {
         name: 'getBooksByIds',
         argsAdapter: (partialResults) => ({ ids: partialResults.map(r => r.id) })
       }
-    },
-    Author: {
-      pkey: 'id'
     }
   }
 
   return { schema, resolvers, entities, data, reset }
 }
 
-test('should resolve foreign types referenced in different results', { only: 0 }, async (t) => {
+test('should resolve foreign types referenced in different results', async (t) => {
   const query = `{
     booksByAuthors(authorIds: [10, 11, 12]) {
       title author { name { firstName, lastName } }
