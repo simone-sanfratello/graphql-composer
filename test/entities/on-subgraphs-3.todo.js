@@ -15,16 +15,22 @@ const booksSubgraph = () => {
     NONFICTION
   }
 
+  type Author {
+    id: ID
+  }
+
   type Book {
     id: ID!
     title: String
     genre: BookGenre
+    author: Author
   }
 
   type Query {
     getBook(id: ID!): Book
     getBookTitle(id: ID!): String
     getBooksByIds(ids: [ID]!): [Book]!
+    booksByAuthors(authorIds: [ID!]!): [Book]
   }
 `
   const data = { library: null }
@@ -34,22 +40,26 @@ const booksSubgraph = () => {
       1: {
         id: 1,
         title: 'A Book About Things That Never Happened',
-        genre: 'FICTION'
+        genre: 'FICTION',
+        authorId: 10
       },
       2: {
         id: 2,
         title: 'A Book About Things That Really Happened',
-        genre: 'NONFICTION'
+        genre: 'NONFICTION',
+        authorId: 10
       },
       3: {
         id: 3,
-        title: 'From the universe',
-        genre: 'FICTION'
+        title: 'Watering the plants',
+        genre: 'NONFICTION',
+        authorId: 11
       },
       4: {
         id: 4,
-        title: 'From another world',
-        genre: 'FICTION'
+        title: 'Pruning the branches',
+        genre: 'NONFICTION',
+        authorId: 11
       }
     }
   }
@@ -57,6 +67,9 @@ const booksSubgraph = () => {
   reset()
 
   const resolvers = {
+    Book: {
+      author: (parent) => ({ id: parent.authorId || data.library[parent.id]?.authorId })
+    },
     Query: {
       getBook (_, { id }) {
         return data.library[id]
@@ -68,16 +81,15 @@ const booksSubgraph = () => {
         return ids
           .map((id) => { return data.library[id] })
           .filter(b => !!b)
-      }
+      },
+      booksByAuthors: (parent, { authorIds }) => Object.values(data.library).filter(book => authorIds.includes(String(book.authorId)))
     }
   }
+
   const entities = {
     Book: {
       pkey: 'id',
-      fkeys: [{
-        pkey: 'author.id',
-        type: 'Author'
-      }],
+      fkeys: [{ pkey: 'author.id', type: 'Author' }],
       resolver: {
         name: 'getBooksByIds',
         argsAdapter: (partialResults) => ({ ids: partialResults.map(r => r.id) })
@@ -108,6 +120,7 @@ const authorsSubgraph = () => {
     id: ID
     name: AuthorName
     todos(id: ID!): [AuthorTodo]
+    books: [Book]
   }
 
   type BlogPostPublishEvent {
@@ -117,11 +130,19 @@ const authorsSubgraph = () => {
   type Query {
     get(id: ID!): Author
     list: [Author]
+    authors (where: WhereIdsIn): [Author]
   }
 
-  type Mutation {
-    createAuthor(author: AuthorInput!): Author!
-    batchCreateAuthor(authors: [AuthorInput]!): [Author]!
+  input IdsIn {
+    in: [ID]!
+  }
+
+  input WhereIdsIn {
+    ids: IdsIn
+  }
+
+  type Book {
+    id: ID!
   }
 `
 
@@ -144,6 +165,20 @@ const authorsSubgraph = () => {
         name: {
           firstName: 'John',
           lastName: 'Writer'
+        }
+      },
+      10: {
+        id: 10,
+        name: {
+          firstName: 'Mark',
+          lastName: 'Dark'
+        }
+      },
+      11: {
+        id: 11,
+        name: {
+          firstName: 'Daisy',
+          lastName: 'Dyson'
         }
       }
     }
@@ -171,45 +206,38 @@ const authorsSubgraph = () => {
       },
       list () {
         return Object.values(data.authors)
-      }
-    },
-    Mutation: {
-      createAuthor (_, { author: authorInput }) {
-        const id = Object.keys(data.authors).length + 1
-        const author = {
-          id,
-          name: { ...authorInput }
-        }
-
-        data.authors[id] = author
-        return author
       },
-
-      batchCreateAuthor (_, { authors: authorsInput }) {
-        const created = []
-        for (const authorInput of authorsInput) {
-          const id = Object.keys(data.authors).length + 1
-          const author = {
-            id,
-            name: { ...authorInput }
-          }
-
-          data.authors[id] = author
-          created.push(author)
-        }
-        return created
-      }
+      authors: (_, args) => Object.values(data.authors).filter(a => args.where.ids.in.includes(String(a.id)))
     },
     Author: {
       todos (parent, { priority }) {
         return Object.values(data.todos).filter((t) => {
           return String(t.authorId) === parent.id && String(t.priority) === priority
         })
+      },
+      books: (author, args, context, info) => {
+        // pretend to call books-subgraph service
+        const books = {
+          10: [{ id: 1 }, { id: 2 }],
+          11: [{ id: 3 }, { id: 4 }]
+        }
+        return books[author?.id]
       }
     }
   }
 
-  const entities = {}
+  const entities = {
+    Author: {
+      pkey: 'id',
+      resolver: {
+        name: 'authors',
+        argsAdapter: (partialResults) => ({ where: { ids: { in: partialResults.map(r => r.id) } } })
+      }
+    },
+    Book: {
+      pkey: 'id'
+    }
+  }
 
   return { schema, resolvers, entities, data, reset }
 }
@@ -245,10 +273,6 @@ const reviewsSubgraph = () => {
     getReviewBook(id: ID!): Book
     getReviewBookByIds(ids: [ID]!): [Book]!
     getReviewsByBookId(id: ID!): [Review]!
-  }
-
-  type Mutation {
-    createReview(review: ReviewInput!): Review!
   }
 `
 
@@ -324,22 +348,9 @@ const reviewsSubgraph = () => {
           return book
         })
       }
-    },
-    Mutation: {
-      createReview (_, { review: reviewInput }) {
-        const id = Object.keys(data.reviews).length + 1
-        const { bookId, content, rating } = reviewInput
-        const review = { id, rating, content }
-
-        data.reviews[id] = review
-        data.books[bookId] ??= { id: bookId, reviews: [] }
-        const book = data.books[bookId]
-        book.reviews.push(id)
-
-        return review
-      }
     }
   }
+
   const entities = {
     Book: {
       pkey: 'id',
@@ -392,7 +403,9 @@ async function setupComposer (t) {
     }
   ])
 
+  const pino = require('pino')
   const options = {
+    logger: pino({ level: 'debug' }),
     subgraphs: services.map(service => ({
       name: service.name,
       server: { host: service.host },
@@ -404,33 +417,20 @@ async function setupComposer (t) {
   return service
 }
 
-test('should resolve foreign types referenced in different results', async (t) => {
+test('should resolve nested foreign types with lists in the result', { only: 1 }, async (t) => {
   const query = `{
-    getReviewBookByIds(ids: [1,2,3]) {
+    booksByAuthors(authorIds: [10,11,12]) {
       title
-      author { name { lastName } }
-      reviews { rating }
+      author { 
+        name { firstName, lastName } 
+        books { 
+          reviews { rating } 
+        }
+      }
     }
   }`
 
-  const expectedResult = {
-    getReviewBookByIds:
-      [{
-        title: 'A Book About Things That Never Happened',
-        author: { name: { lastName: 'Pluck' } },
-        reviews: [{ rating: 2 }]
-      },
-      {
-        title: 'A Book About Things That Really Happened',
-        author: { name: { lastName: 'Writer' } },
-        reviews: [{ rating: 3 }]
-      },
-      {
-        title: 'Uknown memories',
-        author: { name: null },
-        reviews: [{ rating: 3 }, { rating: 5 }, { rating: 1 }]
-      }]
-  }
+  const expectedResult = { booksByAuthors: [{ title: 'A Book About Things That Never Happened', author: { name: { firstName: 'Mark', lastName: 'Dark' }, books: [{ reviews: [{ rating: 2 }] }, { reviews: [{ rating: 3 }] }] } }, { title: 'A Book About Things That Really Happened', author: { name: { firstName: 'Mark', lastName: 'Dark' }, books: [{ reviews: [{ rating: 2 }] }, { reviews: [{ rating: 3 }] }] } }, { title: 'Watering the plants', author: { name: { firstName: 'Daisy', lastName: 'Dyson' }, books: [{ reviews: [{ rating: 3 }, { rating: 5 }, { rating: 1 }] }, { reviews: [] }] } }, { title: 'Pruning the branches', author: { name: { firstName: 'Daisy', lastName: 'Dyson' }, books: [{ reviews: [{ rating: 3 }, { rating: 5 }, { rating: 1 }] }, { reviews: [] }] } }] }
 
   const service = await setupComposer(t)
 

@@ -120,6 +120,7 @@ const resolvers = {
 
         return book
       })
+        .filter(b => !!b)
     }
   },
   Mutation: {

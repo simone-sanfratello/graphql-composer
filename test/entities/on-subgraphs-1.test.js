@@ -140,11 +140,6 @@ const authorsSubgraph = () => {
       list: [Author]
       authors (where: WhereIdsIn): [Author]
     }
-  
-    type Mutation {
-      createAuthor(author: AuthorInput!): Author!
-      batchCreateAuthor(authors: [AuthorInput]!): [Author]!
-    }
   `
 
   const data = {
@@ -218,33 +213,6 @@ const authorsSubgraph = () => {
       },
       authors (_, args) {
         return Object.values(data.authors).filter(a => args.where.ids.in.includes(String(a.id)))
-      }
-    },
-    Mutation: {
-      async createAuthor (_, { author: authorInput }) {
-        const id = Object.keys(data.authors).length + 1
-        const author = {
-          id,
-          name: { ...authorInput }
-        }
-
-        data.authors[id] = author
-        return author
-      },
-
-      async batchCreateAuthor (_, { authors: authorsInput }) {
-        const created = []
-        for (const authorInput of authorsInput) {
-          const id = Object.keys(data.authors).length + 1
-          const author = {
-            id,
-            name: { ...authorInput }
-          }
-
-          data.authors[id] = author
-          created.push(author)
-        }
-        return created
       }
     },
     Author: {

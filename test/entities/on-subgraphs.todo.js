@@ -4,7 +4,6 @@ const assert = require('node:assert/strict')
 const { test } = require('node:test')
 const { graphqlRequest, startRouter } = require('./helper')
 
-
 test('should not involve type keys that are not in the selection', async (t) => {
   const query = `{
       getReviewBookByIds(ids: [1,2,3]) {
@@ -162,155 +161,6 @@ test('should run the same query with different args', async (t) => {
   }
 })
 
-test('should resolve nested foreign types with lists in result', async (t) => {
-  const query = `{
-      booksByAuthors(authorIds: [10,11,12]) {
-        title
-        author { 
-          name { firstName, lastName } 
-          books { 
-            reviews { rating } 
-          }
-        }
-      }
-    }`
-
-  const expectedResponse = { booksByAuthors: [{ title: 'A Book About Things That Never Happened', author: { name: { firstName: 'Mark', lastName: 'Dark' }, books: [{ reviews: [{ rating: 2 }] }, { reviews: [{ rating: 3 }] }] } }, { title: 'A Book About Things That Really Happened', author: { name: { firstName: 'Mark', lastName: 'Dark' }, books: [{ reviews: [{ rating: 2 }] }, { reviews: [{ rating: 3 }] }] } }, { title: 'Watering the plants', author: { name: { firstName: 'Daisy', lastName: 'Dyson' }, books: [{ reviews: [{ rating: 3 }, { rating: 5 }, { rating: 1 }] }, { reviews: [] }] } }, { title: 'Pruning the branches', author: { name: { firstName: 'Daisy', lastName: 'Dyson' }, books: [{ reviews: [{ rating: 3 }, { rating: 5 }, { rating: 1 }] }, { reviews: [] }] } }] }
-
-  const extend = {
-    'authors-subgraph': (data) => {
-      data.authors[10] = {
-        id: 10,
-        name: {
-          firstName: 'Mark',
-          lastName: 'Dark'
-        }
-      }
-      data.authors[11] = {
-        id: 11,
-        name: {
-          firstName: 'Daisy',
-          lastName: 'Dyson'
-        }
-      }
-
-      return {
-        schema: `
-              input IdsIn {
-                in: [ID]!
-              }
-              input WhereIdsIn {
-                ids: IdsIn
-              }
-  
-              type Book {
-                id: ID!
-              }
-       
-              extend type Query {
-                authors (where: WhereIdsIn): [Author]
-              }
-  
-              extend type Author {
-                books: [Book]
-              }
-            `,
-        resolvers: {
-          Query: {
-            authors: (_, args) => Object.values(data.authors).filter(a => args.where.ids.in.includes(String(a.id)))
-          },
-          Author: {
-            books: (author, args, context, info) => {
-              // pretend to call books-subgraph service
-              const books = {
-                10: [{ id: 1 }, { id: 2 }],
-                11: [{ id: 3 }, { id: 4 }]
-              }
-              return books[author?.id]
-            }
-          }
-        }
-      }
-    },
-    'books-subgraph': (data) => {
-      data.library[1].authorId = 10
-      data.library[2].authorId = 10
-      data.library[3] = {
-        id: 3,
-        title: 'Watering the plants',
-        genre: 'NONFICTION',
-        authorId: 11
-      }
-      data.library[4] = {
-        id: 4,
-        title: 'Pruning the branches',
-        genre: 'NONFICTION',
-        authorId: 11
-      }
-
-      return {
-        schema: `
-            type Author {
-              id: ID
-            }
-            
-            extend type Book {
-              author: Author
-            }
-  
-            extend type Query {
-              booksByAuthors(authorIds: [ID!]!): [Book]
-            }
-          `,
-        resolvers: {
-          Book: {
-            author: (parent) => ({ id: parent.authorId || data.library[parent.id]?.authorId })
-          },
-          Query: {
-            booksByAuthors: (parent, { authorIds }) => Object.values(data.library).filter(book => authorIds.includes(String(book.authorId)))
-          }
-        }
-      }
-    }
-  }
-  const overrides = {
-    subgraphs: {
-      'books-subgraph': {
-        entities: {
-          Book: {
-            pkey: 'id',
-            fkeys: [{ pkey: 'author.id', type: 'Author' }],
-            resolver: {
-              name: 'getBooksByIds',
-              argsAdapter: (partialResults) => ({ ids: partialResults.map(r => r.id) })
-            }
-          }
-        }
-      },
-      'authors-subgraph': {
-        entities: {
-          Author: {
-            pkey: 'id',
-            resolver: {
-              name: 'authors',
-              argsAdapter: (partialResults) => ({ where: { ids: { in: partialResults.map(r => r.id) } } })
-            }
-          },
-          Book: {
-            pkey: 'id'
-          }
-        }
-      }
-    }
-  }
-
-  const router = await startRouter(t, ['authors-subgraph', 'books-subgraph', 'reviews-subgraph'], overrides, extend)
-
-  const response = await graphqlRequest(router, query)
-
-  assert.deepStrictEqual(response, expectedResponse)
-})
-
 test('should use multiple subgraphs', async t => {
   const requests = [
     // query multiple services
@@ -376,10 +226,3 @@ test('should use multiple subgraphs', async t => {
     '\nresponse' + JSON.stringify(response, null, 2))
   }
 })
-
-// TODO results: list, single, nulls, partials
-// TODO when an entity is spread across multiple subgraphs
-// TODO should throw error (timeout?) resolving type entity
-
-// TODO crud ops
-// TODO subscriptions

@@ -38,13 +38,13 @@ reset()
 
 const resolvers = {
   Query: {
-    async getBook (_, { id }) {
+    getBook (_, { id }) {
       return data.library[id]
     },
-    async getBookTitle (_, { id }) {
+    getBookTitle (_, { id }) {
       return data.library[id]?.title
     },
-    async getBooksByIds (_, { ids }) {
+    getBooksByIds (_, { ids }) {
       return ids
         .map((id) => { return data.library[id] })
         .filter(b => !!b)
@@ -58,7 +58,7 @@ const entities = {
       name: 'getBooksByIds',
       argsAdapter (partialResults) {
         return {
-          ids: partialResults.map(r => r.id)
+          ids: partialResults.map(r => r.bookId)
         }
       }
     }

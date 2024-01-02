@@ -1,7 +1,5 @@
 'use strict'
 
-'use strict'
-
 const assert = require('node:assert')
 const { test } = require('node:test')
 
@@ -129,11 +127,6 @@ const authorsSubgraph = () => {
     list: [Author]
     authors (where: WhereIdsIn): [Author]
   }
-
-  type Mutation {
-    createAuthor(author: AuthorInput!): Author!
-    batchCreateAuthor(authors: [AuthorInput]!): [Author]!
-  }
 `
 
   const data = {
@@ -187,35 +180,8 @@ const authorsSubgraph = () => {
         return Object.values(data.authors).filter(a => args.where.ids.in.includes(String(a.id)))
       }
     },
-    Mutation: {
-      async createAuthor (_, { author: authorInput }) {
-        const id = Object.keys(data.authors).length + 1
-        const author = {
-          id,
-          name: { ...authorInput }
-        }
-
-        data.authors[id] = author
-        return author
-      },
-
-      async batchCreateAuthor (_, { authors: authorsInput }) {
-        const created = []
-        for (const authorInput of authorsInput) {
-          const id = Object.keys(data.authors).length + 1
-          const author = {
-            id,
-            name: { ...authorInput }
-          }
-
-          data.authors[id] = author
-          created.push(author)
-        }
-        return created
-      }
-    },
     Author: {
-      async todos (parent, { priority }) {
+      todos (parent, { priority }) {
         return Object.values(data.todos).filter((t) => {
           return String(t.authorId) === parent.id && String(t.priority) === priority
         })
@@ -267,10 +233,6 @@ const reviewsSubgraph = () => {
     getReviewBook(id: ID!): Book
     getReviewBookByIds(ids: [ID]!): [Book]!
     getReviewsByBookId(id: ID!): [Review]!
-  }
-
-  type Mutation {
-    createReview(review: ReviewInput!): Review!
   }
 `
 
@@ -346,22 +308,9 @@ const reviewsSubgraph = () => {
           return book
         })
       }
-    },
-    Mutation: {
-      async createReview (_, { review: reviewInput }) {
-        const id = Object.keys(data.reviews).length + 1
-        const { bookId, content, rating } = reviewInput
-        const review = { id, rating, content }
-
-        data.reviews[id] = review
-        data.books[bookId] ??= { id: bookId, reviews: [] }
-        const book = data.books[bookId]
-        book.reviews.push(id)
-
-        return review
-      }
     }
   }
+
   const entities = {
     Book: {
       pkey: 'id',

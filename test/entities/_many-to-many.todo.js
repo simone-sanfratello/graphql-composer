@@ -115,8 +115,6 @@ test('should handle many-to-many relation linked by an intermediary entity', asy
   for (const request of requests) {
     const response = await graphqlRequest(service, request.query, request.variables)
 
-    console.log(JSON.stringify(response))
-
     assert.deepStrictEqual(response, request.expected, 'should get expected result from composer service,' +
       '\nquery: ' + request.query +
       '\nexpected' + JSON.stringify(request.expected, null, 2) +
