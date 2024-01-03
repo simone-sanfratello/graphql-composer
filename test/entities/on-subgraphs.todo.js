@@ -161,6 +161,138 @@ test('should run the same query with different args', async (t) => {
   }
 })
 
+test('resolves a partial entity from a single subgraph', async (t) => {
+  const router = await startRouter(t, ['books-subgraph', 'reviews-subgraph'])
+  const query = `
+    query {
+      getReviewBook(id: 1) {
+        id
+        reviews {
+          id
+          rating
+          content
+        }
+      }
+    }
+  `
+  const data = await graphqlRequest(router, query)
+
+  assert.deepStrictEqual(data, {
+    getReviewBook: {
+      id: '1',
+      reviews: [
+        {
+          id: '1',
+          rating: 2,
+          content: 'Would not read again.'
+        }
+      ]
+    }
+  })
+})
+
+test('resolves an entity across multiple subgraphs', async (t) => {
+  const router = await startRouter(t, ['books-subgraph', 'reviews-subgraph'])
+
+  await t.test('query flows from non-owner to owner subgraph', async (t) => {
+    const query = `
+      query {
+        getReviewBook(id: 1) {
+          id
+          title
+          genre
+          reviews {
+            id
+            rating
+            content
+          }
+        }
+      }
+    `
+    const data = await graphqlRequest(router, query)
+
+    assert.deepStrictEqual(data, {
+      getReviewBook: {
+        id: '1',
+        title: 'A Book About Things That Never Happened',
+        genre: 'FICTION',
+        reviews: [
+          {
+            id: '1',
+            rating: 2,
+            content: 'Would not read again.'
+          }
+        ]
+      }
+    })
+  })
+
+  await t.test('query flows from owner to non-owner subgraph', async (t) => {
+    const query = `
+      query {
+        getBook(id: 1) {
+          id
+          title
+          genre
+          reviews {
+            id
+            rating
+            content
+          }
+        }
+      }
+    `
+    const data = await graphqlRequest(router, query)
+
+    assert.deepStrictEqual(data, {
+      getBook: {
+        id: '1',
+        title: 'A Book About Things That Never Happened',
+        genre: 'FICTION',
+        reviews: [
+          {
+            id: '1',
+            rating: 2,
+            content: 'Would not read again.'
+          }
+        ]
+      }
+    })
+  })
+
+  await t.test('fetches key fields not in selection set', async (t) => {
+    const query = `
+      query {
+        getReviewBook(id: 1) {
+          # id not included and it is part of the keys.
+          title
+          genre
+          reviews {
+            id
+            rating
+            content
+          }
+        }
+      }
+    `
+    const data = await graphqlRequest(router, query)
+
+    assert.deepStrictEqual(data, {
+      getReviewBook: {
+        title: 'A Book About Things That Never Happened',
+        genre: 'FICTION',
+        reviews: [
+          {
+            id: '1',
+            rating: 2,
+            content: 'Would not read again.'
+          }
+        ]
+      }
+    })
+  })
+})
+
 test('should use multiple subgraphs', async t => {
   const requests = [
     // query multiple services

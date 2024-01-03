@@ -322,3 +322,97 @@ test('query capabilities', async t => {
     })
   }
 })
+
+test('mutations', async t => {
+  const mutations = [
+    {
+      name: 'should run a mutation query with variables',
+      query: `
+      mutation CreateAuthor($author: AuthorInput!) {
+        createAuthor(author: $author) {
+          id name { firstName lastName }
+        }
+      }
+      `,
+      variables: { author: { firstName: 'John', lastName: 'Johnson' } },
+      result: {
+        createAuthor: {
+          id: '3',
+          name: { firstName: 'John', lastName: 'Johnson' }
+        }
+      }
+    },
+
+    {
+      name: 'should run a mutation query with input object literal',
+      query: `
+      mutation {
+        createAuthor(author: { firstName: "Tuco", lastName: "Gustavo" }) {
+          id name { firstName lastName }
+        }
+      }
+      `,
+      result: { createAuthor: { id: '3', name: { firstName: 'Tuco', lastName: 'Gustavo' } } }
+    },
+
+    {
+      name: 'should run a mutation query with an array as input',
+      query: `
+      mutation {
+        batchCreateAuthor(authors: [
+          { firstName: "Ernesto", lastName: "de la Cruz" },
+          { firstName: "Hector", lastName: "Rivera" },
+        ]) {
+          id name { firstName lastName }
+        }
+      }
+      `,
+      result: {
+        batchCreateAuthor: [{
+          id: '3',
+          name: { firstName: 'Ernesto', lastName: 'de la Cruz' }
+        },
+        {
+          id: '4',
+          name: { firstName: 'Hector', lastName: 'Rivera' }
+        }]
+      }
+    }]
+
+  let service, services
+  t.before(async () => {
+    services = await createGraphqlServices(t, [
+      {
+        name: 'books-subgraph',
+        file: path.join(__dirname, 'fixtures/books.js'),
+        listen: true
+      },
+      {
+        name: 'authors-subgraph',
+        file: path.join(__dirname, 'fixtures/authors.js'),
+        listen: true
+      }
+    ])
+    const options = {
+      subgraphs: services.map(service => ({
+        name: service.name,
+        server: { host: service.host }
+      }))
+    }
+
+    const s = await createComposerService(t, { compose, options })
+    service = s.service
+  })
+
+  t.beforeEach(() => {
+    services.forEach(s => s.config.reset())
+  })
+
+  for (const c of mutations) {
+    await t.test(c.name, async (t) => {
+      const result = await graphqlRequest(service, c.query, c.variables)
+
+      assert.deepStrictEqual(result, c.result)
+    })
+  }
+})
