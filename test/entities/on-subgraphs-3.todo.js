@@ -403,9 +403,7 @@ async function setupComposer (t) {
     }
   ])
 
-  const pino = require('pino')
   const options = {
-    logger: pino({ level: 'debug' }),
     subgraphs: services.map(service => ({
       name: service.name,
       server: { host: service.host },
@@ -417,7 +415,7 @@ async function setupComposer (t) {
   return service
 }
 
-test('should resolve nested foreign types with lists in the result', { only: 1 }, async (t) => {
+test('should resolve nested foreign types with lists in the result', async (t) => {
   const query = `{
     booksByAuthors(authorIds: [10,11,12]) {
       title

@@ -6,7 +6,6 @@ const { test } = require('node:test')
 
 const { createComposerService, createGraphqlServices, graphqlRequest } = require('./helper')
 const { compose } = require('../lib')
-const { default: pino } = require('pino')
 
 test('should run a query to a single subgraph', async t => {
   const query = '{ artists (where: { id: { in: ["103","102"] } }) { lastName } }'
@@ -213,7 +212,7 @@ test('should run a query that has null results', async (t) => {
   assert.deepStrictEqual(result, expectedResult)
 })
 
-test('query capabilities', { only: 1 }, async t => {
+test('query capabilities', async t => {
   const capabilities = [
     {
       name: 'should run a query with a literal argument',
@@ -234,20 +233,77 @@ test('query capabilities', { only: 1 }, async t => {
     {
       name: 'should run a query returning a scalar type',
       query: 'query { getBookTitle (id: 1) }',
-      result: { getBookTitle: 'A Book About Things That Never Happened' },
-      only: 1
+      result: { getBookTitle: 'A Book About Things That Never Happened' }
+    },
+
+    /*
+    TODO
+    {
+      name: 'should run a query with meta fields',
+      query: `{ getBook(id: 1) { __typename ...on Book { id, genre } } }`,
+      result: { getBook: { __typename: 'Book', id: '1', genre: 'FICTION' } }
+    },
+
+    TODO
+    {
+      name: 'should run a query with a fragment',
+      query: `fragment bookFields on Book { id title genre }
+        query GetBookById($id: ID!) { getBook(id: $id) { ...bookFields } }`,
+      result: { getBook: { id: '1', genre: 'FICTION', title: 'A Book About Things That Never Happened' } }
+    }
+    */
+
+    {
+      name: 'should run a query with a literal argument',
+      query: 'query { list { id name { firstName lastName } todos (id: 2) { task } } }',
+      result: {
+        list: [
+          { id: '1', name: { firstName: 'Peter', lastName: 'Pluck' }, todos: [{ task: 'Get really creative' }] },
+          { id: '2', name: { firstName: 'John', lastName: 'Writer' }, todos: [{ task: 'Get really creative' }] }
+        ]
+      }
+    },
+
+    {
+      name: 'should run a query query with a variable argument',
+      query: 'query GetAuthorListWithTodos ($id: ID!) { list { id name { firstName lastName } todos(id: $id) { task } } }',
+      variables: { id: 1 },
+      result: {
+        list: [
+          { id: '1', name: { firstName: 'Peter', lastName: 'Pluck' }, todos: [{ task: 'Write another book' }] },
+          { id: '2', name: { firstName: 'John', lastName: 'Writer' }, todos: [{ task: 'Write another book' }] }
+        ]
+      }
+    },
+
+    {
+      name: 'should run multiple queries in a single request',
+      query: `query {
+        getBook(id: 2) { id genre }        
+        list { id name { firstName lastName } }
+      }`,
+      result: {
+        getBook: { id: '2', genre: 'NONFICTION' },
+        list: [{ id: '1', name: { firstName: 'Peter', lastName: 'Pluck' } }, { id: '2', name: { firstName: 'John', lastName: 'Writer' } }]
+      }
     }
   ]
 
   let service
   t.before(async () => {
-    const services = await createGraphqlServices(t, [{
-      name: 'books-subgraph',
-      file: path.join(__dirname, 'fixtures/books.js'),
-      listen: true
-    }])
+    const services = await createGraphqlServices(t, [
+      {
+        name: 'books-subgraph',
+        file: path.join(__dirname, 'fixtures/books.js'),
+        listen: true
+      },
+      {
+        name: 'authors-subgraph',
+        file: path.join(__dirname, 'fixtures/authors.js'),
+        listen: true
+      }
+    ])
     const options = {
-      logger: pino({ level: 'debug' }),
       subgraphs: services.map(service => ({
         name: service.name,
         server: { host: service.host }
@@ -259,7 +315,6 @@ test('query capabilities', { only: 1 }, async t => {
   })
 
   for (const c of capabilities) {
-    if (!c.only) { continue }
     await t.test(c.name, async (t) => {
       const result = await graphqlRequest(service, c.query, c.variables)
 
@@ -267,157 +322,3 @@ test('query capabilities', { only: 1 }, async t => {
     })
   }
 })
-
-/*
-{
-  name: 'should run a query with meta fields',
-  query: `{
-    getBook(id: 1) {
-      __typename
-      ...on Book { id, genre }
-    }
-  }`,
-  result: {
-    getBook: {
-      __typename: 'Book',
-      id: '1',
-      genre: 'FICTION'
-    }
-  }
-},
-
-{
-  name: 'should run a query with a fragment',
-  query: `fragment bookFields on Book { id title genre }
-    query GetBookById($id: ID!) {
-      getBook(id: $id) {
-        ...bookFields
-      }
-    }
-  `,
-  result: {
-    getBook: {
-      id: '1',
-      genre: 'FICTION',
-      title: 'A Book About Things That Never Happened'
-    }
-  }
-}
-
-/*
-test('nested query with a literal argument', async (t) => {
-  const { service } = await createComposerService(t, { compose, options }) // ['authors-subgraph'])
-  const query = `
-    query {
-      list {
-        id
-        name {
-          firstName
-          lastName
-        }
-        todos(id: 2) {
-          task
-        }
-      }
-    }
-  `
-  const result = await graphqlRequest(service, query)
-
-  assert.deepStrictEqual(result, {
-    list: [
-      {
-        id: '1',
-        name: {
-          firstName: 'Peter',
-          lastName: 'Pluck'
-        },
-        todos: [
-          {
-            task: 'Get really creative'
-          }
-        ]
-      },
-      {
-        id: '2',
-        name: {
-          firstName: 'John',
-          lastName: 'Writer'
-        },
-        todos: [
-          {
-            task: 'Get really creative'
-          }
-        ]
-      }
-    ]
-  })
-})
-
-test('nested query with a variable argument', async (t) => {
-  const { service } = await createComposerService(t, { compose, options }) // ['authors-subgraph'])
-  const query = `
-    query GetAuthorListWithTodos($id: ID!) {
-      list {
-        id
-        name {
-          firstName
-          lastName
-        }
-        todos(id: $id) {
-          task
-        }
-      }
-    }
-  `
-  const data = await graphqlRequest(router, query, { id: 1 })
-
-  assert.deepStrictEqual(result, {
-    list: [
-      {
-        id: '1',
-        name: {
-          firstName: 'Peter',
-          lastName: 'Pluck'
-        },
-        todos: [
-          {
-            task: 'Write another book'
-          }
-        ]
-      },
-      {
-        id: '2',
-        name: {
-          firstName: 'John',
-          lastName: 'Writer'
-        },
-        todos: [
-          {
-            task: 'Write another book'
-          }
-        ]
-      }
-    ]
-  })
-})
-
-test('multiple queries in a single request', async (t) => {
-  const { service } = await createComposerService(t, { compose, options }) // ['authors-subgraph', 'books-subgraph'])
-  const query = `
-    query {
-      getBook(id: 2) {
-        id genre
-      }
-      list {
-        id name { firstName lastName }
-      }
-    }
-  `
-  const result = await graphqlRequest(service, query)
-
-  assert.deepStrictEqual(result, {
-    getBook: { id: '2', genre: 'NONFICTION' },
-    list: [{ id: '1', name: { firstName: 'Peter', lastName: 'Pluck' } }, { id: '2', name: { firstName: 'John', lastName: 'Writer' } }]
-  })
-})
-*/
