@@ -6,7 +6,6 @@ const { test } = require('node:test')
 
 const { createComposerService, createGraphqlServices, graphqlRequest } = require('./helper')
 const { compose } = require('../lib')
-const { default: pino } = require('pino')
 
 test('should run a query to a single subgraph', async t => {
   const query = '{ artists (where: { id: { in: ["103","102"] } }) { lastName } }'
@@ -213,7 +212,7 @@ test('should run a query that has null results', async (t) => {
   assert.deepStrictEqual(result, expectedResult)
 })
 
-test('query capabilities', { only: true }, async t => {
+test('query capabilities', async t => {
   const capabilities = [
     {
       name: 'should run a query with a literal argument',
@@ -297,7 +296,6 @@ test('query capabilities', { only: true }, async t => {
       }
     ])
     const options = {
-      logger: pino({ level: 'debug' }),
       subgraphs: services.map(service => ({
         name: service.name,
         server: { host: service.host }
@@ -309,7 +307,7 @@ test('query capabilities', { only: true }, async t => {
   })
 
   for (const c of capabilities) {
-    await t.test(c.name, { only: 1 }, async (t) => {
+    await t.test(c.name, async (t) => {
       const result = await graphqlRequest(service, c.query, c.variables)
 
       assert.deepStrictEqual(result, c.result)
