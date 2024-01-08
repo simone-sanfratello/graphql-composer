@@ -5,6 +5,7 @@ const { test } = require('node:test')
 
 const { createComposerService, createGraphqlServices, graphqlRequest } = require('../helper')
 const { compose } = require('../../lib')
+const { default: pino } = require('pino')
 
 const booksSubgraph = () => {
   const schema = `
@@ -364,6 +365,7 @@ async function setupComposer (t) {
   ])
 
   const options = {
+    logger: pino({ level: 'debug' }),
     subgraphs: services.map(service => ({
       name: service.name,
       server: { host: service.host },
@@ -375,7 +377,7 @@ async function setupComposer (t) {
   return service
 }
 
-test('should resolve foreign types with nested keys', async (t) => {
+test('should resolve foreign types with nested keys', { only: 1 }, async (t) => {
   const query = `{
     getReviewBookByIds(ids: [1,2,3]) {
       title

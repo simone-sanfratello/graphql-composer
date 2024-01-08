@@ -60,7 +60,7 @@ test('resolves a partial entity from a single subgraph', async (t) => {
   assert.deepStrictEqual(result, expectedResult)
 })
 
-test('should run the same query with different args', { only: true }, async (t) => {
+test('should run the same query with different args', async (t) => {
   const queries = [
     '{ getReviewBookByIds(ids: [1]) { title reviews { rating } } }',
     '{ getReviewBookByIds(ids: [2]) { title reviews { rating } } }'
