@@ -302,7 +302,7 @@ function songsSubgraphs () {
   return { schema, reset, resolvers, entities, data }
 }
 
-test('entities on subgraph, scenario #3: entities with 1-1, 1-2-m, m-2-m relations solved on subgraphs', { only: 0 }, async (t) => {
+test('entities on subgraph, scenario #3: entities with 1-1, 1-2-m, m-2-m relations solved on subgraphs', async (t) => {
   let service
 
   t.before(async () => {
@@ -366,17 +366,17 @@ test('entities on subgraph, scenario #3: entities with 1-1, 1-2-m, m-2-m relatio
           { title: 'The bitter end', singer: { firstName: 'Brian', lastName: 'Molko', profession: 'Singer' } },
           { title: 'Vieni via con me', singer: { firstName: 'Roberto', lastName: 'Benigni', profession: 'Director' } }]
       }
-    }
+    },
 
-    // {
-    //   name: 'should run a query that resolve entities with a 1-to-many relation',
-    //   query: '{ artists (ids: ["103","102"]) { lastName, songs { title } } }',
-    //   result: {
-    //     artists: [
-    //       { lastName: 'Benigni', songs: [{ title: 'Vieni via con me' }] },
-    //       { lastName: 'Molko', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }] }]
-    //   }
-    // },
+    {
+      name: 'should run a query that resolve entities with a 1-to-many relation',
+      query: '{ artists (ids: ["103","102"]) { lastName, songs { title } } }',
+      result: {
+        artists: [
+          { lastName: 'Benigni', songs: [{ title: 'Vieni via con me' }] },
+          { lastName: 'Molko', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }] }]
+      }
+    },
 
     // {
     //   name: 'should run a query that resolve multiple entities on different subgrapgh on the same node',
@@ -404,7 +404,7 @@ test('entities on subgraph, scenario #3: entities with 1-1, 1-2-m, m-2-m relatio
   ]
 
   for (const c of requests) {
-    await t.test(c.name, { only: true }, async (t) => {
+    await t.test(c.name, async (t) => {
       // console.log(' *************')
       // console.log(c.query)
       // console.log(' *************')

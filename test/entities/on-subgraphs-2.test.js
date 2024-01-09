@@ -377,7 +377,7 @@ async function setupComposer (t) {
   return service
 }
 
-test('should resolve foreign types with nested keys', { only: 1 }, async (t) => {
+test('should resolve foreign types with nested keys', async (t) => {
   const query = `{
     getReviewBookByIds(ids: [1,2,3]) {
       title
