@@ -302,7 +302,7 @@ function songsSubgraphs () {
   return { schema, reset, resolvers, entities, data }
 }
 
-test('entities on subgraph, scenario #3: entities with 1-1, 1-2-m, m-2-m relations solved on subgraphs', /* { only: true }, */ async (t) => {
+test('entities on subgraph, scenario #3: entities with 1-1, 1-2-m, m-2-m relations solved on subgraphs', { only: 0 }, async (t) => {
   let service
 
   t.before(async () => {
