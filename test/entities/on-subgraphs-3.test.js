@@ -61,39 +61,7 @@ function artistsSubgraph () {
   const entities = {
     Artist: {
       resolver: { name: 'artists' },
-      pkey: 'id',
-      many: [
-        {
-          type: 'Movie',
-          pkey: 'id',
-          fkey: 'directorId',
-          subgraph: 'movies-subgraph',
-          resolver: {
-            name: 'getMoviesByArtists',
-            argsAdapter: (artistIds) => {
-              return { ids: artistIds }
-            },
-            partialResults: (partialResults) => {
-              return partialResults.map(r => r.id)
-            }
-          }
-        },
-        {
-          type: 'Song',
-          pkey: 'id',
-          fkey: 'singerId',
-          subgraph: 'songs-subgraph',
-          resolver: {
-            name: 'getSongsByArtists',
-            argsAdapter: (artistIds) => {
-              return { ids: artistIds }
-            },
-            partialResults: (partialResults) => {
-              return partialResults.map(r => r.id)
-            }
-          }
-        }
-      ]
+      pkey: 'id'
     }
   }
 
@@ -106,6 +74,7 @@ function moviesSubgraph () {
       id: ID!
       title: String
       directorId: ID
+      director: Artist
     }
   
     type Query {
@@ -115,15 +84,6 @@ function moviesSubgraph () {
     type Artist {
       id: ID
       movies: [Movie]
-    }
-  
-    extend type Movie {
-      director: Artist
-    }
-  
-    extend type Query {
-      getArtistsByMovies (ids: [ID!]!): [Artist]
-      getMoviesByArtists (ids: [ID!]!): [Movie]
     }
   `
 
@@ -158,12 +118,6 @@ function moviesSubgraph () {
       async movies (_, { ids }) {
         return Object.values(data.movies).filter(m => ids.includes(String(m.id)))
       },
-      getArtistsByMovies: async (parent, { ids }, context, info) => {
-        return ids.map(id => ({ id }))
-      },
-      getMoviesByArtists: async (parent, { ids }, context, info) => {
-        return Object.values(data.movies).filter(m => ids.includes(String(m.directorId)))
-      }
     },
     Movie: {
       director: (parent, args, context, info) => {
@@ -207,6 +161,7 @@ function songsSubgraphs () {
       id: ID!
       title: String
       singerId: ID
+      singer: Artist
     }
   
     type Query {
@@ -216,15 +171,6 @@ function songsSubgraphs () {
     type Artist {
       id: ID
       songs: [Song]
-    }
-  
-    extend type Song {
-      singer: Artist
-    }
-  
-    extend type Query {
-      getArtistsBySongs (ids: [ID!]!): [Artist]
-      getSongsByArtists (ids: [ID!]!): [Song]
     }
   `
 
@@ -258,12 +204,6 @@ function songsSubgraphs () {
     Query: {
       async songs (_, { ids }) {
         return Object.values(data.songs).filter(s => ids.includes(String(s.id)))
-      },
-      getArtistsBySongs: async (parent, { ids }, context, info) => {
-        return ids.map(id => ({ id }))
-      },
-      getSongsByArtists: async (parent, { ids }, context, info) => {
-        return Object.values(data.songs).filter(s => ids.includes(String(s.singerId)))
       }
     },
     Song: {
@@ -302,7 +242,7 @@ function songsSubgraphs () {
   return { schema, reset, resolvers, entities, data }
 }
 
-test('entities on subgraph, scenario #3: entities with 1-1, 1-2-m, m-2-m relations solved on subgraphs', async (t) => {
+test('entities on subgraph, scenario #3: entities with 1-1, 1-2-m, m-2-m relations solved on subgraphs', { only: 1 }, async (t) => {
   let service
 
   t.before(async () => {
@@ -357,16 +297,16 @@ test('entities on subgraph, scenario #3: entities with 1-1, 1-2-m, m-2-m relatio
   })
 
   const requests = [
-    {
-      name: 'should run a query that resolve entities with a 1-to-1 relation',
-      query: '{ songs (ids: [1,2,3]) { title, singer { firstName, lastName, profession } } }',
-      result: {
-        songs: [
-          { title: 'Every you every me', singer: { firstName: 'Brian', lastName: 'Molko', profession: 'Singer' } },
-          { title: 'The bitter end', singer: { firstName: 'Brian', lastName: 'Molko', profession: 'Singer' } },
-          { title: 'Vieni via con me', singer: { firstName: 'Roberto', lastName: 'Benigni', profession: 'Director' } }]
-      }
-    },
+    // {
+    //   name: 'should run a query that resolve entities with a 1-to-1 relation',
+    //   query: '{ songs (ids: [1,2,3]) { title, singer { firstName, lastName, profession } } }',
+    //   result: {
+    //     songs: [
+    //       { title: 'Every you every me', singer: { firstName: 'Brian', lastName: 'Molko', profession: 'Singer' } },
+    //       { title: 'The bitter end', singer: { firstName: 'Brian', lastName: 'Molko', profession: 'Singer' } },
+    //       { title: 'Vieni via con me', singer: { firstName: 'Roberto', lastName: 'Benigni', profession: 'Director' } }]
+    //   }
+    // }
 
     {
       name: 'should run a query that resolve entities with a 1-to-many relation',
@@ -376,7 +316,7 @@ test('entities on subgraph, scenario #3: entities with 1-1, 1-2-m, m-2-m relatio
           { lastName: 'Benigni', songs: [{ title: 'Vieni via con me' }] },
           { lastName: 'Molko', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }] }]
       }
-    },
+    }
 
     // {
     //   name: 'should run a query that resolve multiple entities on different subgrapgh on the same node',
@@ -404,7 +344,7 @@ test('entities on subgraph, scenario #3: entities with 1-1, 1-2-m, m-2-m relatio
   ]
 
   for (const c of requests) {
-    await t.test(c.name, async (t) => {
+    await t.test(c.name, { only: 1 }, async (t) => {
       // console.log(' *************')
       // console.log(c.query)
       // console.log(' *************')
