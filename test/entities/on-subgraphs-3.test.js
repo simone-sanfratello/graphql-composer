@@ -381,11 +381,13 @@ test('entities on subgraph, scenario #3: entities with 1-1, 1-2-m, m-2-m relatio
     //   }
     // },
 
+    // { artistsSongs(artistIds: [\"103\"]) { songs  { title id singerId } id singerId } }
+
     {
       name: 'should run a query with double nested results',
-      query: '{ artists (ids: ["103"]) { songs { title } } }', // , singer { firstName, lastName }
+      query: '{ artists (ids: ["103"]) { songs { title, singer { firstName, lastName } } } }',
       result: { artists: [{ songs: [{ title: 'Every you every me', singer: { firstName: 'Brian', lastName: 'Molko' } }, { title: 'The bitter end', singer: { firstName: 'Brian', lastName: 'Molko' } }] }] }
-    },
+    }
 
     // {
     //   name: 'should run a query with insane nested results',
