@@ -5,6 +5,7 @@ const { test } = require('node:test')
 
 const { createComposerService, createGraphqlServices, graphqlRequest } = require('../helper')
 const { compose } = require('../../lib')
+const { default: pino } = require('pino')
 
 const booksSubgraph = () => {
   const schema = `
@@ -364,7 +365,7 @@ async function setupComposer (t) {
   ])
 
   const options = {
-    // logger: pino({ level: 'debug', sync: true }),
+    logger: pino({ level: 'debug', sync: true }),
     subgraphs: services.map(service => ({
       name: service.name,
       server: { host: service.host },
