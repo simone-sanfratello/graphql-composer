@@ -25,16 +25,20 @@ stream.on('test:fail', (t) => {
 })
 
 stream.on('end', () => {
-  // TODO better formatting
+  let failed = 0
   if (fails.length > 0) {
     for (const f of fails) {
+      // TODO skip nesting error properly, add the name in the bottom test name
+      if (!f.details?.error?.cause?.message) { continue }
+      // TODO better formatting, use stdout/stderr, get nesting test name
       console.log('---\n')
       console.log('File:', f.file)
       console.log('Test:', f.name)
       console.log('Error:', f.details.error.cause.message)
+      failed++
     }
-
     console.log('\n\n\n')
+    console.log(' >>> failed:', failed)
   }
 })
 

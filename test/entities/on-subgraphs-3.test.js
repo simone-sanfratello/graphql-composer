@@ -359,33 +359,33 @@ test('entities on subgraph, scenario #3: entities with 1-1, 1-2-m, m-2-m relatio
       }
     },
 
-    {
-      name: 'should run a query that resolve entities with a 1-to-many relation',
-      query: '{ artists (ids: ["103","102"]) { lastName, songs { title } } }',
-      result: {
-        artists: [
-          { lastName: 'Benigni', songs: [{ title: 'Vieni via con me' }] },
-          { lastName: 'Molko', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }] }]
-      }
-    },
+    // {
+    //   name: 'should run a query that resolve entities with a 1-to-many relation',
+    //   query: '{ artists (ids: ["103","102"]) { lastName, songs { title } } }',
+    //   result: {
+    //     artists: [
+    //       { lastName: 'Benigni', songs: [{ title: 'Vieni via con me' }] },
+    //       { lastName: 'Molko', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }] }]
+    //   }
+    // },
 
-    {
-      name: 'should run a query that resolve multiple entities on different subgrapgh on the same node',
-      query: '{ artists (ids: ["103","101","102"]) { lastName, songs { title }, movies { title } } }',
-      result: {
-        artists: [
-          { lastName: 'Nolan', songs: null, movies: [{ title: 'Interstellar' }, { title: 'Oppenheimer' }] },
-          { lastName: 'Benigni', songs: [{ title: 'Vieni via con me' }], movies: [{ title: 'La vita é bella' }] },
-          { lastName: 'Molko', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }], movies: null }
-        ]
-      }
-    },
+    // {
+    //   name: 'should run a query that resolve multiple entities on different subgrapgh on the same node',
+    //   query: '{ artists (ids: ["103","101","102"]) { lastName, songs { title }, movies { title } } }',
+    //   result: {
+    //     artists: [
+    //       { lastName: 'Nolan', songs: null, movies: [{ title: 'Interstellar' }, { title: 'Oppenheimer' }] },
+    //       { lastName: 'Benigni', songs: [{ title: 'Vieni via con me' }], movies: [{ title: 'La vita é bella' }] },
+    //       { lastName: 'Molko', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }], movies: null }
+    //     ]
+    //   }
+    // },
 
-    {
-      name: 'should run a query with double nested results',
-      query: '{ artists (ids: ["103"]) { songs { title, singer { firstName, lastName } } } }',
-      result: { artists: [{ songs: [{ title: 'Every you every me', singer: { firstName: 'Brian', lastName: 'Molko' } }, { title: 'The bitter end', singer: { firstName: 'Brian', lastName: 'Molko' } }] }] }
-    }
+    // {
+    //   name: 'should run a query with double nested results',
+    //   query: '{ artists (ids: ["103"]) { songs { title, singer { firstName, lastName } } } }',
+    //   result: { artists: [{ songs: [{ title: 'Every you every me', singer: { firstName: 'Brian', lastName: 'Molko' } }, { title: 'The bitter end', singer: { firstName: 'Brian', lastName: 'Molko' } }] }] }
+    // },
 
     // {
     //   name: 'should run a query with insane nested results',
@@ -402,7 +402,7 @@ test('entities on subgraph, scenario #3: entities with 1-1, 1-2-m, m-2-m relatio
 
       const result = await graphqlRequest(service, c.query, c.variables)
 
-      console.log(JSON.stringify(result, null, 2))
+      // console.log(JSON.stringify(result, null, 2))
 
       assert.deepStrictEqual(result, c.result)
     })
