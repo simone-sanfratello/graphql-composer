@@ -348,38 +348,38 @@ test('entities on subgraph, scenario #3: entities with 1-1, 1-2-m, m-2-m relatio
   })
 
   const requests = [
-    // {
-    //   name: 'should run a query that resolve entities with a 1-to-1 relation',
-    //   query: '{ songs (ids: [1,2,3]) { title, singer { firstName, lastName, profession } } }',
-    //   result: {
-    //     songs: [
-    //       { title: 'Every you every me', singer: { firstName: 'Brian', lastName: 'Molko', profession: 'Singer' } },
-    //       { title: 'The bitter end', singer: { firstName: 'Brian', lastName: 'Molko', profession: 'Singer' } },
-    //       { title: 'Vieni via con me', singer: { firstName: 'Roberto', lastName: 'Benigni', profession: 'Director' } }]
-    //   }
-    // },
+    {
+      name: 'should run a query that resolve entities with a 1-to-1 relation',
+      query: '{ songs (ids: [1,2,3]) { title, singer { firstName, lastName, profession } } }',
+      result: {
+        songs: [
+          { title: 'Every you every me', singer: { firstName: 'Brian', lastName: 'Molko', profession: 'Singer' } },
+          { title: 'The bitter end', singer: { firstName: 'Brian', lastName: 'Molko', profession: 'Singer' } },
+          { title: 'Vieni via con me', singer: { firstName: 'Roberto', lastName: 'Benigni', profession: 'Director' } }]
+      }
+    },
 
-    // {
-    //   name: 'should run a query that resolve entities with a 1-to-many relation',
-    //   query: '{ artists (ids: ["103","102"]) { lastName, songs { title } } }',
-    //   result: {
-    //     artists: [
-    //       { lastName: 'Benigni', songs: [{ title: 'Vieni via con me' }] },
-    //       { lastName: 'Molko', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }] }]
-    //   }
-    // },
+    {
+      name: 'should run a query that resolve entities with a 1-to-many relation',
+      query: '{ artists (ids: ["103","102"]) { lastName, songs { title } } }',
+      result: {
+        artists: [
+          { lastName: 'Benigni', songs: [{ title: 'Vieni via con me' }] },
+          { lastName: 'Molko', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }] }]
+      }
+    },
 
-    // {
-    //   name: 'should run a query that resolve multiple entities on different subgrapgh on the same node',
-    //   query: '{ artists (ids: ["103","101","102"]) { lastName, songs { title }, movies { title } } }',
-    //   result: {
-    //     artists: [
-    //       { lastName: 'Nolan', songs: null, movies: [{ title: 'Interstellar' }, { title: 'Oppenheimer' }] },
-    //       { lastName: 'Benigni', songs: [{ title: 'Vieni via con me' }], movies: [{ title: 'La vita é bella' }] },
-    //       { lastName: 'Molko', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }], movies: null }
-    //     ]
-    //   }
-    // },
+    {
+      name: 'should run a query that resolve multiple entities on different subgrapgh on the same node',
+      query: '{ artists (ids: ["103","101","102"]) { lastName, songs { title }, movies { title } } }',
+      result: {
+        artists: [
+          { lastName: 'Nolan', songs: null, movies: [{ title: 'Interstellar' }, { title: 'Oppenheimer' }] },
+          { lastName: 'Benigni', songs: [{ title: 'Vieni via con me' }], movies: [{ title: 'La vita é bella' }] },
+          { lastName: 'Molko', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }], movies: null }
+        ]
+      }
+    },
 
     {
       name: 'should run a query with double nested results',

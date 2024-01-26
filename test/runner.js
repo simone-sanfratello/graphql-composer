@@ -24,24 +24,17 @@ stream.on('test:fail', (t) => {
   process.exitCode = 1
 })
 
-stream.on('close', () => {
+stream.on('end', () => {
   // TODO better formatting
   if (fails.length > 0) {
     for (const f of fails) {
-      console.log('\n')
+      console.log('---\n')
+      console.log('File:', f.file)
       console.log('Test:', f.name)
-      console.log('Error:', f.details.error.cause)
-      console.log('---')
-      // {
-      //   name: 'should run a query with double nested results',
-      //   nesting: 1,
-      //   testNumber: 1,
-      //   details: { duration_ms: 332.996288, error: [Error] },
-      //   line: 398,
-      //   column: 13,
-      //   file: '/home/simone/code/graphql-composer/test/entities/on-subgraphs-3.test.js'
-      // }
+      console.log('Error:', f.details.error.cause.message)
     }
+
+    console.log('\n\n\n')
   }
 })
 
