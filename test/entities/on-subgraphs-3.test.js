@@ -5,7 +5,6 @@ const assert = require('node:assert')
 
 const { createComposerService, createGraphqlServices, graphqlRequest } = require('../helper')
 const { compose } = require('../../lib')
-const { default: pino } = require('pino')
 
 function artistsSubgraph () {
   const schema = `
@@ -332,7 +331,6 @@ test('entities on subgraph, scenario #3: entities with 1-1, 1-2-m, m-2-m relatio
     ])
 
     const options = {
-      logger: pino({ level: 'debug', sync: true }),
       defaultArgsAdapter: (partialResults) => {
         return { ids: partialResults.map(r => r?.id) }
       },
