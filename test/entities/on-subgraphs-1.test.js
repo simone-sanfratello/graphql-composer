@@ -281,8 +281,6 @@ test('should resolve foreign types referenced in different results', async (t) =
     }
   }`
 
-  console.log(query)
-
   const expectedResult = {
     booksByAuthors: [
       { title: 'A Book About Things That Never Happened', author: { name: { firstName: 'John Jr.', lastName: 'Johnson' } } },

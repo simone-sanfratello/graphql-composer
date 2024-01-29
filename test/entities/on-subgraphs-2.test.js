@@ -384,8 +384,6 @@ test('should resolve foreign types with nested keys', async (t) => {
     }
   }`
 
-  console.log(query)
-
   const expectedResult = {
     getReviewBookByIds:
       [{

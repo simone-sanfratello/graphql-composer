@@ -394,13 +394,7 @@ test('entities on subgraph, scenario #3: entities with 1-1, 1-2-m, m-2-m relatio
 
   for (const c of requests) {
     await t.test(c.name, async (t) => {
-      console.log(' *************')
-      console.log(c.query)
-      console.log(' *************')
-
       const result = await graphqlRequest(service, c.query, c.variables)
-
-      // console.log(JSON.stringify(result, null, 2))
 
       assert.deepStrictEqual(result, c.result)
     })

@@ -19,7 +19,6 @@ const stream = run({
 const fails = []
 
 stream.on('test:fail', (t) => {
-  // if (!t.details.error.cause) { return }
   fails.push(t)
   process.exitCode = 1
 })
