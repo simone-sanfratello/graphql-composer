@@ -6,6 +6,7 @@ const { test } = require('node:test')
 const { compose } = require('../../lib')
 const { Composer } = require('../../lib/composer')
 const { createComposerService, createGraphqlServices, graphqlRequest, assertObject } = require('../helper')
+const { default: pino } = require('pino')
 
 test('composer on top', async () => {
   const composerOptions = {
@@ -63,6 +64,7 @@ test('composer on top', async () => {
             as: 'director',
             field: 'directorId',
             pkey: 'id',
+            subgraph: 'movies-subgraph',
             resolver: {
               name: 'movies',
               argsAdapter: (movieIds) => {
@@ -103,6 +105,7 @@ test('composer on top', async () => {
             as: 'singer',
             field: 'singerId',
             pkey: 'id',
+            subgraph: 'songs-subgraph',
             resolver: {
               name: 'songs',
               argsAdapter: (songIds) => {
@@ -268,6 +271,7 @@ test('composer on top', async () => {
 
     const options = {
       ...composerOptions,
+      logger: pino({ level: 'debug' }),
       subgraphs: services.map(service => (
         {
           name: service.name,

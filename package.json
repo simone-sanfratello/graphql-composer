@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "main": "lib/index.js",
   "scripts": {
-    "test": "npm run lint && c8 node --test test/runner.js",
+    "test": "npm run lint && borp --coverage -p test/**/*.test.js",
     "lint": "standard | snazzy",
     "lint:fix": "standard --fix"
   },
@@ -18,6 +18,7 @@
     "undici": "^6.0.1"
   },
   "devDependencies": {
+    "borp": "^0.5.0",
     "c8": "^8.0.1",
     "dedent": "^1.5.1",
     "glob": "^10.3.10",
