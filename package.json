@@ -10,18 +10,16 @@
     "lint:fix": "standard --fix"
   },
   "dependencies": {
-    "fastify": "^4.25.1",
+    "fastify": "^4.26.0",
     "graphql": "^16.8.1",
-    "mercurius": "^13.3.2",
+    "mercurius": "^13.3.3",
     "metaline": "^1.1.0",
-    "pino": "^8.17.1",
-    "undici": "^6.0.1"
+    "pino": "^8.18.0",
+    "undici": "^6.6.0"
   },
   "devDependencies": {
-    "borp": "^0.5.0",
-    "c8": "^8.0.1",
+    "borp": "^0.9.0",
     "dedent": "^1.5.1",
-    "glob": "^10.3.10",
     "snazzy": "^9.0.0",
     "standard": "^17.1.0"
   }
