@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "main": "lib/index.js",
   "scripts": {
-    "test": "npm run lint && borp --coverage -p test/**/*.test.js",
+    "test": "npm run lint && borp --coverage",
     "lint": "standard | snazzy",
     "lint:fix": "standard --fix"
   },

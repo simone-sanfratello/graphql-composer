@@ -111,8 +111,8 @@ test('composer on top', async () => {
               argsAdapter: (singerIds) => {
                 return { where: { id: { in: singerIds.map(r => r.id) } } }
               },
-              partialResults: (movies) => {
-                return movies.map(r => ({ id: r.singerId }))
+              partialResults: (songs) => {
+                return songs.map(r => ({ id: r.singerId }))
               }
             }
           }
@@ -284,14 +284,13 @@ test('composer on top', async () => {
 
     const requests = [
       {
-        name: 'should query subgraphs entities / fkey',
+        name: 'should query subgraphs entities / fkey #1',
         query: '{ movies (where: { id: { in: ["10","11","12"] } }) { title director { lastName } } }',
         expected: { movies: [{ title: 'Interstellar', director: { lastName: 'Nolan' } }, { title: 'Oppenheimer', director: { lastName: 'Nolan' } }, { title: 'La vita é bella', director: { lastName: 'Benigni' } }] }
-      }
+      },
 
-      /*
       {
-        name: 'should query subgraphs entities / fkey',
+        name: 'should query subgraphs entities / fkey #2',
         query: '{ songs (where: { id: { in: [1,2,3] } }) { title, singer { firstName, lastName, profession } } }',
         expected: {
           songs: [
@@ -302,26 +301,9 @@ test('composer on top', async () => {
       }
 
       /*
-
       {
-        name: 'should query subgraphs entities / many',
-        query: '{ movies (where: { id: { in: ["10","11","12"] } }) { title, cinemas { name } } }',
-        expected: { movies: [{ title: 'Interstellar', cinemas: [{ name: 'Odeon' }, { name: 'Main Theatre' }] }, { title: 'Oppenheimer', cinemas: [] }, { title: 'La vita é bella', cinemas: [{ name: 'Odeon' }, { name: 'Main Theatre' }] }] }
-      },
-
-      {
-        name: 'should ...',
-        query: '{ artists (where: { id: { in: ["103","102"] } }) { lastName, songs { title } } }',
-        expected: {
-          artists: [
-            { lastName: 'Benigni', songs: [{ title: 'Vieni via con me' }] },
-            { lastName: 'Molko', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }] }]
-        }
-      },
-
-      {
-        name: 'should ...',
-        query: '{ artists (where: { id: { in: ["101","103","102"] } }) { lastName, songs { title }, movies { title } } }',
+        name: 'should query subgraphs entities (many) on the same query',
+        query: '{ artists (where: { id: { in: ["101","103","102"] } }) { lastName, songs { title } } }', // , movies { title }
         expected: {
           artists: [
             { lastName: 'Nolan', songs: [], movies: [{ title: 'Interstellar' }, { title: 'Oppenheimer' }] },
@@ -329,7 +311,25 @@ test('composer on top', async () => {
             { lastName: 'Molko', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }], movies: [] }
           ]
         }
-      },
+      }
+
+      /*
+      {
+        name: 'should query subgraphs entities / many #1',
+        query: '{ movies (where: { id: { in: ["10","11","12"] } }) { title, cinemas { name } } }',
+        expected: { movies: [{ title: 'Interstellar', cinemas: [{ name: 'Odeon' }, { name: 'Main Theatre' }] }, { title: 'Oppenheimer', cinemas: [] }, { title: 'La vita é bella', cinemas: [{ name: 'Odeon' }, { name: 'Main Theatre' }] }] }
+      }
+      /*
+      {
+        name: 'should query subgraphs entities / many #2',
+        query: '{ artists (where: { id: { in: ["103","102"] } }) { lastName, songs { title } } }',
+        expected: {
+          artists: [
+            { lastName: 'Benigni', songs: [{ title: 'Vieni via con me' }] },
+            { lastName: 'Molko', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }] }]
+        }
+      }
+      /*
 
       {
         name: 'should ...',
