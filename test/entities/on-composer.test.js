@@ -283,7 +283,6 @@ test('composer on top', async () => {
     const { service } = await createComposerService(t, { compose, options })
 
     const requests = [
-      /*
       {
         name: 'should query subgraphs entities / fkey #1',
         query: '{ movies (where: { id: { in: ["10","11","12"] } }) { title director { lastName } } }',
@@ -299,12 +298,11 @@ test('composer on top', async () => {
             { title: 'The bitter end', singer: { firstName: 'Brian', lastName: 'Molko', profession: 'Singer' } },
             { title: 'Vieni via con me', singer: { firstName: 'Roberto', lastName: 'Benigni', profession: 'Director' } }]
         }
-      }
-      */
+      },
 
       {
         name: 'should query subgraphs entities (many) on the same query',
-        query: '{ artists (where: { id: { in: ["101","103","102"] } }) { songs { title } } }', // lastName, movies { title }
+        query: '{ artists (where: { id: { in: ["101","103","102"] } }) { lastName songs { title } movies { title } } }',
         expected: {
           artists: [
             { lastName: 'Nolan', songs: [], movies: [{ title: 'Interstellar' }, { title: 'Oppenheimer' }] },
