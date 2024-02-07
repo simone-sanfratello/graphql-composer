@@ -314,33 +314,24 @@ test('composer on top', async () => {
 
       /*
       {
-        name: 'should query subgraphs entities / many #1',
-        query: '{ movies (where: { id: { in: ["10","11","12"] } }) { title, cinemas { name } } }',
-        expected: { movies: [{ title: 'Interstellar', cinemas: [{ name: 'Odeon' }, { name: 'Main Theatre' }] }, { title: 'Oppenheimer', cinemas: [] }, { title: 'La vita é bella', cinemas: [{ name: 'Odeon' }, { name: 'Main Theatre' }] }] }
-      }
-      /*
-      {
-        name: 'should query subgraphs entities / many #2',
-        query: '{ artists (where: { id: { in: ["103","102"] } }) { lastName, songs { title } } }',
-        expected: {
-          artists: [
-            { lastName: 'Benigni', songs: [{ title: 'Vieni via con me' }] },
-            { lastName: 'Molko', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }] }]
-        }
-      }
-      /*
-
-      {
         name: 'should ...',
         query: '{ artists (where: { id: { in: ["103", "101"] } }) { firstName, songs { title, singer { firstName } } } }',
         expected: { artists: [{ firstName: 'Christopher', songs: [] }, { firstName: 'Brian', songs: [{ title: 'Every you every me', singer: { firstName: 'Brian' } }, { title: 'The bitter end', singer: { firstName: 'Brian' } }] }] }
       },
 
+      /*
       {
         name: 'should ...',
         query: '{ artists (where: { id: { in: ["103"] } }) { songs { singer { firstName, songs { title } } } } }',
         expected: { artists: [{ songs: [{ singer: { firstName: 'Brian', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }] } }, { singer: { firstName: 'Brian', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }] } }] }] }
       },
+
+      /*
+      {
+        name: 'should query subgraphs entities / many #1',
+        query: '{ movies (where: { id: { in: ["10","11","12"] } }) { title, cinemas { name } } }',
+        expected: { movies: [{ title: 'Interstellar', cinemas: [{ name: 'Odeon' }, { name: 'Main Theatre' }] }, { title: 'Oppenheimer', cinemas: [] }, { title: 'La vita é bella', cinemas: [{ name: 'Odeon' }, { name: 'Main Theatre' }] }] }
+      }
 
       {
         name: 'should ...',
