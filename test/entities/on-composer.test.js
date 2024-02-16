@@ -314,9 +314,6 @@ test('composer on top', async () => {
           ]
         }
       })
-    }
-
-    if (NEXT) {
       requests.push({
         name: 'should query subgraphs nested entities (many)',
         query: '{ artists (where: { id: { in: ["103", "101"] } }) { lastName movies { title cinemas { name } } } }',
@@ -324,116 +321,119 @@ test('composer on top', async () => {
           artists: [
             {
               lastName: 'Nolan',
-              movies: [{ title: 'Interstellar', cinemas: [{ name: 'Odeon' }, { name: 'Main Theatre' }] },
-              { title: 'Oppenheimer', cinemas: [] }]
-            }, { lastName: 'Molko', movies: [] }]
+              movies: [
+                { title: 'Interstellar', cinemas: [{ name: 'Odeon' }, { name: 'Main Theatre' }] },
+                { title: 'Oppenheimer', cinemas: [] }]
+            },
+            {
+              lastName: 'Molko',
+              movies: []
+            }]
         }
       })
-    }
-
-    /*
-    {
-      name: 'should ...',
-      query: '{ artists (where: { id: { in: ["103"] } }) { songs { singer { firstName, songs { title } } } } }',
-      expected: { artists: [{ songs: [{ singer: { firstName: 'Brian', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }] } }, { singer: { firstName: 'Brian', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }] } }] }] }
-    },
 
       requests.push({
-        name: 'should query subgraphs nested entities (many)',
+        name: 'should query subgraphs nested entities (many and fkey)',
+        query: '{ artists (where: { id: { in: ["103"] } }) { songs { singer { firstName, songs { title } } } } }',
+        expected: { artists: [{ songs: [{ singer: { firstName: 'Brian', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }] } }, { singer: { firstName: 'Brian', songs: [{ title: 'Every you every me' }, { title: 'The bitter end' }] } }] }] }
+      })
+
+      requests.push({
+        name: 'should query subgraphs entities / many #1',
+        query: '{ movies (where: { id: { in: ["10","11","12"] } }) { title, cinemas { name } } }',
+        expected: { movies: [{ title: 'Interstellar', cinemas: [{ name: 'Odeon' }, { name: 'Main Theatre' }] }, { title: 'Oppenheimer', cinemas: [] }, { title: 'La vita é bella', cinemas: [{ name: 'Odeon' }, { name: 'Main Theatre' }] }] }
+      })
+
+      requests.push({
+        name: 'should query subgraphs entities / many #2',
+        query: '{ movies (where: { id: { in: ["10", "11", "12"] } }) { title, cinemas { name } } }',
+        expected: { movies: [{ title: 'Interstellar', cinemas: [{ name: 'Odeon' }, { name: 'Main Theatre' }] }, { title: 'Oppenheimer', cinemas: [] }, { title: 'La vita é bella', cinemas: [{ name: 'Odeon' }, { name: 'Main Theatre' }] }] }
+      })
+
+      requests.push({
+        name: 'should query subgraphs entities / many #3',
         query: '{ artists (where: { id: { in: ["103", "101"] } }) { firstName songs { title singer { firstName } } } }',
         expected: { artists: [{ firstName: 'Christopher', songs: [] }, { firstName: 'Brian', songs: [{ title: 'Every you every me', singer: { firstName: 'Brian' } }, { title: 'The bitter end', singer: { firstName: 'Brian' } }] }] }
       })
-
-    /*
-    {
-      name: 'should query subgraphs entities / many #1',
-      query: '{ movies (where: { id: { in: ["10","11","12"] } }) { title, cinemas { name } } }',
-      expected: { movies: [{ title: 'Interstellar', cinemas: [{ name: 'Odeon' }, { name: 'Main Theatre' }] }, { title: 'Oppenheimer', cinemas: [] }, { title: 'La vita é bella', cinemas: [{ name: 'Odeon' }, { name: 'Main Theatre' }] }] }
     }
 
-    {
-      name: 'should ...',
-      query: '{ cinemas (where: { id: { in: ["90", "91", "92"] } }) { movies { title } } }',
-      expected: { cinemas: [{ movies: [{ title: 'Interstellar' }, { title: 'La vita é bella' }] }, { movies: [] }, { movies: [{ title: 'La vita é bella' }, { title: 'Interstellar' }] }] }
-    },
-
-    {
-      name: 'should ...',
-      query: '{ movies (where: { id: { in: ["10", "11", "12"] } }) { title, cinemas { name } } }',
-      expected: { movies: [{ title: 'Interstellar', cinemas: [{ name: 'Odeon' }, { name: 'Main Theatre' }] }, { title: 'Oppenheimer', cinemas: [] }, { title: 'La vita é bella', cinemas: [{ name: 'Odeon' }, { name: 'Main Theatre' }] }] }
-    },
-
-    {
-      name: 'should ...',
-      query: '{ artists (where: { id: { in: ["102", "101"] } }) { movies { title, cinemas { name, movies { title } } } } }',
-      expected: {
-        artists: [{
-          movies: [{
-            title: 'Interstellar',
-            cinemas: [{
-              name: 'Odeon',
-              movies: [{ title: 'Interstellar' }, { title: 'La vita é bella' }]
-            },
-            {
-              name: 'Main Theatre',
-              movies: [{ title: 'La vita é bella' }, { title: 'Interstellar' }]
-            }]
-          },
-          {
-            title: 'Oppenheimer',
-            cinemas: []
-          }]
-        },
-        {
-          movies: [{
-            title: 'La vita é bella',
-            cinemas: [{
-              name: 'Odeon',
-              movies: [{ title: 'Interstellar' }, { title: 'La vita é bella' }]
-            },
-            {
-              name: 'Main Theatre',
-              movies: [{ title: 'La vita é bella' }, { title: 'Interstellar' }]
-            }]
-          }]
-        }]
-      }
-    },
-
-    {
-      name: 'should ...',
-      query: '{ movies (where: { id: { in: ["10","11"] } }) { cinemas { name, movies { title, director { lastName} } } } }',
-      expected: {
-        movies: [{
-          cinemas: [{
-            name: 'Odeon',
-            movies: [
-              { title: 'Interstellar', director: { lastName: 'Nolan' } },
-              { title: 'La vita é bella', director: { lastName: 'Benigni' } }
-            ]
-          },
-          {
-            name: 'Main Theatre',
-            movies: [
-              { title: 'La vita é bella', director: { lastName: 'Benigni' } },
-              { title: 'Interstellar', director: { lastName: 'Nolan' } }
-            ]
-          }]
-        },
-        {
-          cinemas: []
-        }]
-      }
+    if (NEXT) {
+      requests.push({
+        name: 'should query subgraphs entities / many #',
+        query: '{ cinemas (where: { id: { in: ["90", "91", "92"] } }) { name movies { title } } }',
+        expected: {}
+      })
     }
 
-    */
+    // requests.push({
+    //   name: 'should ...',
+    //   query: '{ artists (where: { id: { in: ["102", "101"] } }) { movies { title, cinemas { name, movies { title } } } } }',
+    //   expected: {
+    //     artists: [{
+    //       movies: [{
+    //         title: 'Interstellar',
+    //         cinemas: [{
+    //           name: 'Odeon',
+    //           movies: [{ title: 'Interstellar' }, { title: 'La vita é bella' }]
+    //         },
+    //         {
+    //           name: 'Main Theatre',
+    //           movies: [{ title: 'La vita é bella' }, { title: 'Interstellar' }]
+    //         }]
+    //       },
+    //       {
+    //         title: 'Oppenheimer',
+    //         cinemas: []
+    //       }]
+    //     },
+    //     {
+    //       movies: [{
+    //         title: 'La vita é bella',
+    //         cinemas: [{
+    //           name: 'Odeon',
+    //           movies: [{ title: 'Interstellar' }, { title: 'La vita é bella' }]
+    //         },
+    //         {
+    //           name: 'Main Theatre',
+    //           movies: [{ title: 'La vita é bella' }, { title: 'Interstellar' }]
+    //         }]
+    //       }]
+    //     }]
+    //   }
+    // })
+
+    // requests.push({
+    //   name: 'should ...',
+    //   query: '{ movies (where: { id: { in: ["10","11"] } }) { cinemas { name, movies { title, director { lastName} } } } }',
+    //   expected: {
+    //     movies: [{
+    //       cinemas: [{
+    //         name: 'Odeon',
+    //         movies: [
+    //           { title: 'Interstellar', director: { lastName: 'Nolan' } },
+    //           { title: 'La vita é bella', director: { lastName: 'Benigni' } }
+    //         ]
+    //       },
+    //       {
+    //         name: 'Main Theatre',
+    //         movies: [
+    //           { title: 'La vita é bella', director: { lastName: 'Benigni' } },
+    //           { title: 'Interstellar', director: { lastName: 'Nolan' } }
+    //         ]
+    //       }]
+    //     },
+    //     {
+    //       cinemas: []
+    //     }]
+    //   }
+    // }    )
 
     for (const c of requests) {
       if (!c) { continue }
       await t.test(c.name, async (t) => {
         const result = await graphqlRequest(service, c.query, c.variables)
 
-        console.log(JSON.stringify(result))
+        console.log(JSON.stringify(result,null,2))
 
         assert.deepStrictEqual(result, c.expected, 'should get expected result from composer service,' +
           '\nquery: ' + c.query +
