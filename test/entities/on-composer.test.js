@@ -319,9 +319,15 @@ test('composer on top', async () => {
     if (NEXT) {
       requests.push({
         name: 'should query subgraphs nested entities (many)',
-        // query: '{ artists (where: { id: { in: ["103"] } }) { songs { title singer { firstName } } } }',
-        query: '{ artists (where: { id: { in: ["103", "101"] } }) { movies { cinemas { name } } } }',
-        expected: { artists: [] }
+        query: '{ artists (where: { id: { in: ["103", "101"] } }) { lastName movies { title cinemas { name } } } }',
+        expected: {
+          artists: [
+            {
+              lastName: 'Nolan',
+              movies: [{ title: 'Interstellar', cinemas: [{ name: 'Odeon' }, { name: 'Main Theatre' }] },
+              { title: 'Oppenheimer', cinemas: [] }]
+            }, { lastName: 'Molko', movies: [] }]
+        }
       })
     }
 
@@ -426,6 +432,8 @@ test('composer on top', async () => {
       if (!c) { continue }
       await t.test(c.name, async (t) => {
         const result = await graphqlRequest(service, c.query, c.variables)
+
+        console.log(JSON.stringify(result))
 
         assert.deepStrictEqual(result, c.expected, 'should get expected result from composer service,' +
           '\nquery: ' + c.query +
