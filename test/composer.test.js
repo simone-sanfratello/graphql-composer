@@ -8,7 +8,7 @@ const { createGraphqlServices } = require('./helper')
 const { Composer } = require('../lib/composer')
 const { compose } = require('../')
 
-test.describe('merge schemas', { skip: 1 }, () => {
+test.describe('merge schemas', () => {
   test('should get sdl from composer', async (t) => {
     const schemas = [
       {

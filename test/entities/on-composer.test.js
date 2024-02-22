@@ -143,7 +143,7 @@ test('composer on top', async () => {
     }
   }
 
-  await test('should generate entities for composer on top for multiple subgraphs', { skip: 1 }, async t => {
+  await test('should generate entities for composer on top for multiple subgraphs', async t => {
     const expectedSchema = 'type Artist { id: ID, movies: [Movie], songs: [Song] }\n\n' +
       'type Movie { id: ID!, director: Artist, cinemas: [Cinema] }\n\n' +
       'type Song { id: ID!, singer: Artist }\n\n' +
@@ -158,47 +158,113 @@ test('composer on top', async () => {
       Song: {},
       Query: { _composer: () => { } }
     }
+    const fn = () => {}
 
     const expectedEntities = {
-      Artist: { subgraph: 'artists-subgraph', resolver: { name: 'artists' }, pkey: 'id', fkeys: [] },
+      Artist: {
+        subgraph: 'artists-subgraph',
+        resolver: { name: 'artists', argsAdapter: fn },
+        pkey: 'id',
+        fkeys: [],
+        many: [
+          {
+            type: 'Movie',
+            pkey: 'id',
+            as: 'movies',
+            fkey: 'directorId',
+            subgraph: 'movies-subgraph',
+            resolver: {
+              name: 'movies',
+              argsAdapter: fn,
+              partialResults: fn
+            }
+          },
+          {
+            type: 'Song',
+            pkey: 'id',
+            as: 'songs',
+            fkey: 'singerId',
+            subgraph: 'songs-subgraph',
+            resolver: {
+              name: 'songs',
+              argsAdapter: fn,
+              partialResults: fn
+            }
+          }
+        ]
+      },
       Movie: {
         subgraph: 'movies-subgraph',
-        resolver: { name: 'movies' },
+        resolver: { name: 'movies', argsAdapter: fn },
         pkey: 'id',
         fkeys: [
           {
             type: 'Artist',
-            as: 'director',
             field: 'directorId',
+            as: 'director',
             pkey: 'id',
+            subgraph: 'artists-subgraph',
             resolver: {
-              name: 'movies',
-              argsAdapter: () => { },
-              partialResults: () => { }
+              name: 'artists',
+              argsAdapter: fn,
+              partialResults: fn
+            }
+          }
+        ],
+        many: [
+          {
+            type: 'Cinema',
+            pkey: 'id',
+            as: 'cinemas',
+            fkey: 'movieIds',
+            subgraph: 'cinemas-subgraph',
+            resolver: {
+              name: 'cinemas',
+              argsAdapter: fn,
+              partialResults: fn
             }
           }
         ]
       },
       Song: {
         subgraph: 'songs-subgraph',
-        resolver: { name: 'songs' },
+        resolver: { name: 'songs', argsAdapter: fn },
         pkey: 'id',
         fkeys: [
           {
             type: 'Artist',
-            as: 'singer',
             field: 'singerId',
+            as: 'singer',
             pkey: 'id',
+            subgraph: 'artists-subgraph',
             resolver: {
-              name: 'songs',
-              argsAdapter: () => { },
-              partialResults: () => { }
+              name: 'artists',
+              argsAdapter: fn,
+              partialResults: fn
+            }
+          }
+        ],
+        many: []
+      },
+      Cinema: {
+        subgraph: 'cinemas-subgraph',
+        resolver: { name: 'cinemas', argsAdapter: fn },
+        pkey: 'id',
+        fkeys: [],
+        many: [
+          {
+            type: 'Movie',
+            pkey: 'movieIds',
+            as: 'movies',
+            fkey: 'id',
+            subgraph: 'movies-subgraph',
+            resolver: {
+              name: 'movies',
+              argsAdapter: fn,
+              partialResults: fn
             }
           }
         ]
-      },
-      Cinema: {
-        subgraph: 'cinemas-subgraph', resolver: { name: 'cinemas' }, pkey: 'id', fkeys: []
       }
     }
 
@@ -244,7 +310,7 @@ test('composer on top', async () => {
     assertObject(entities, expectedEntities)
   })
 
-  await test('should generate entities resolvers for composer on top for multiple subgraphs', { skip: 0 }, async t => {
+  await test('should generate entities resolvers for composer on top for multiple subgraphs', async t => {
     const services = await createGraphqlServices(t, [
       {
         name: 'artists-subgraph',
